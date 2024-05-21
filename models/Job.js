@@ -18,7 +18,7 @@ const Job = db.define('job', {
         type: Sequelize.STRING,
     },
     newjob: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
     }
 });
 
