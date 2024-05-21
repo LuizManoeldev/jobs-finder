@@ -1,6 +1,8 @@
 const express    = require('express');
+const exphbs     = require('express-handlebars');
 const app        = express();
-const db         = require('./db/connection')
+const path       = require('path');
+const db         = require('./db/connection');
 const bodyParser = require('body-parser');
 
 const PORT = 3000;
@@ -12,7 +14,15 @@ app.listen(PORT, () => {
 //Body Parser
 app.use(bodyParser.urlencoded({ extended:false }))
 
-//Db
+//handlerbars
+app.set('views', path.join(__dirname, 'views')) // diretorio das views
+app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' })) // arquivo principal do layout
+app.set('view engine', 'handlebars') // handlerbars com engine de renderização
+
+// pasta de arquivos estaticos - ex. imgs, svg e etc
+app.use(express.static(path.join(__dirname, )))
+
+//db
 db 
     .authenticate()
     .then(() => {
@@ -24,7 +34,12 @@ db
 
 //Routes
 app.get('/', (req, res) => {
-    res.send("Esta funcionando!")
+    //res.send("Esta funcionando!")
+
+    //alteracao para retornar um handlerbar
+    // nao inicia no main, pois ele ja foi setado como principal e é exibido independente
+    // da pagina
+    res.render('index')
 })
 
 //Jobs route
