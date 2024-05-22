@@ -5,7 +5,11 @@ const path       = require('path');
 const db         = require('./db/connection');
 const bodyParser = require('body-parser');
 const Job        = require('./models/Job')
+const Sequelize  = require('sequelize');
+const Op         = Sequelize.Op;
+
 const PORT = 3000;
+
 
 app.listen(PORT, () => {
     console.log(`O express esta rodando na porta ${PORT}`);
@@ -34,29 +38,44 @@ db
 
 //Routes
 app.get('/', (req, res) => {
-    //res.send("Esta funcionando!")
-
-    //alteracao para retornar um handlerbar
-    // nao inicia no main, pois ele ja foi setado como principal e é exibido independente
-    // da pagina
-    //
-    Job.findAll({order: [
-        ['createdAt', 'DESC']
-    ]})
-    .then(jobs => {
-        res.render('index', {
-            jobs
+    //input no index -  name = "job"
+    // form action = '/' method = "GET"
+    let search = req.query.job 
+    let query = `%${search}%` // PH -> PHP, Word -> Wordpress
+    
+    // Se não tiver parametro de busca:
+    if(!search){
+        Job.findAll({order: [
+            ['createdAt', 'DESC']
+        ]})
+        .then(jobs => {
+            res.render('index', {
+                jobs
+            });
+    
+        })
+        .catch(err => {
+            console.log("Ocorreu um erro ao buscar os trabalhos:", err);
+            res.render('index', { jobs: [] });
         });
- 
-    })
-    .catch(err => {
-        console.log("Ocorreu um erro ao buscar os trabalhos:", err);
-        res.render('index', { jobs: [] });
-    });
- 
-    /* .finally(() => {
-        throw new Error("Erro simulado"); // Simula um erro
-    }); */ 
+    } else { // caso tenha um parametro para busca:
+        Job.findAll({
+            where: {title: { [Op.like]: query}},
+            order: [
+            ['createdAt', 'DESC']
+        ]})
+        .then(jobs => {
+            res.render('index', {
+                jobs
+            });
+    
+        })
+        .catch(err => {
+            console.log("Ocorreu um erro ao buscar os trabalhos:", err);
+            res.render('index', { jobs: [] });
+        });
+    }
+    
 })
 
 //Jobs route
