@@ -4,7 +4,7 @@ const app        = express();
 const path       = require('path');
 const db         = require('./db/connection');
 const bodyParser = require('body-parser');
-
+const Job        = require('./models/Job')
 const PORT = 3000;
 
 app.listen(PORT, () => {
@@ -20,7 +20,7 @@ app.engine('handlebars', exphbs.engine({ defaultLayout: 'main' })) // arquivo pr
 app.set('view engine', 'handlebars') // handlerbars com engine de renderização
 
 // pasta de arquivos estaticos - ex. imgs, svg e etc
-app.use(express.static(path.join(__dirname, )))
+app.use(express.static(path.join(__dirname,'public' )))
 
 //db
 db 
@@ -39,7 +39,24 @@ app.get('/', (req, res) => {
     //alteracao para retornar um handlerbar
     // nao inicia no main, pois ele ja foi setado como principal e é exibido independente
     // da pagina
-    res.render('index')
+    //
+    Job.findAll({order: [
+        ['createdAt', 'DESC']
+    ]})
+    .then(jobs => {
+        res.render('index', {
+            jobs
+        });
+ 
+    })
+    .catch(err => {
+        console.log("Ocorreu um erro ao buscar os trabalhos:", err);
+        res.render('index', { jobs: [] });
+    });
+ 
+    /* .finally(() => {
+        throw new Error("Erro simulado"); // Simula um erro
+    }); */ 
 })
 
 //Jobs route
